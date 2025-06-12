@@ -2,17 +2,147 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
 from survey3d import Survey, SurveyManager, Mesh
+from pathlib import Path
+import threading
+import pyrtma
+import time
+import os
+import climber_message as md
+import climber_core_utilities.load_config as load_config
+import climber_core_utilities.path_tools as path_tools
+from contextlib import asynccontextmanager
 
-# The app we are serving
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    rtmaThread = threading.Thread(target=RTMAConnect)
+    rtmaThread.start()
+    yield
+    RTMADisconnect()
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
 DATA_PATH = r"../data/"
 DIST_PATH = r"../frontend/dist/"
 
+# Get system config
+SYS_CONFIG = load_config.system()
+
+# The app we are serving
+app = FastAPI(lifespan=lifespan)
+
 # The survey manager
 manager = SurveyManager(CONFIG_PATH, DATA_PATH)
+
+# Variable which controls the RTMA loop
+rtmaConnected = False
+rtmaExpectedClose = False
+client = pyrtma.Client(module_id=0)
+
+"""
+RTMA
+"""
+
+def RTMAConnect():
+    # Get IP to connect to
+    if SYS_CONFIG and 'server' in SYS_CONFIG:  # Assume in the local sys config
+        MMM_IP = str(SYS_CONFIG["server"])
+    else:
+        MMM_IP = "192.168.1.40:7111"  # Final backup
+
+    global client
+    global rtmaExpectedClose
+
+    while not rtmaExpectedClose:
+        print('Connecting to RTMA at ' + MMM_IP)
+
+        # Attempt to connect to RTMA
+        while not client.connected:
+            try:
+                if (rtmaExpectedClose):
+                    print("RTMA closed expectedly. Goodbye!")
+                    return
+                client.connect(MMM_IP)
+                client.subscribe(
+                    [md.MT_ACKNOWLEDGE, 
+                     md.MT_EXIT, 
+                     md.MT_ENABLE_PARTICIPANT_RESPONSES,
+                     md.MT_SAVE_MESSAGE_LOG]
+                )
+                client.send_module_ready()
+                print('Successfully connected to RTMA, waiting for messages')
+            except Exception as e:
+                print("Could not connect to RTMA, trying again in 5 seconds")
+                client.disconnect()
+                time.sleep(5)
+        
+        # Make connected true
+        global rtmaConnected
+        rtmaConnected = True
+        
+        # Open RTMA message loop
+        while rtmaConnected:
+            try:
+                msgIn = client.read_message(0.1)
+                if msgIn is None:
+                    continue
+                elif (msgIn.type_id == md.MT_ACKNOWLEDGE):
+                    print("RTMA acknowledged")
+                elif (msgIn.type_id == md.MT_EXIT):
+                    client.disconnect()
+                    rtmaConnected = False
+                elif isinstance(msgIn.data, md.MDF_ENABLE_PARTICIPANT_RESPONSES):
+                    if manager.survey and manager.survey.projectedFields:
+                        print(
+                            "There is already a current survey! Cannot start "
+                            + "new survey until current survey is complete.")
+                    else:
+                        if (manager.survey 
+                            and not manager.survey.projectedFields):
+                            print(f"Survey is empty; updating survey set "
+                                  + f"number to {msgIn.data.set_num}")
+                            manager.survey.setNum = msgIn.data.set_num
+                        elif manager.newSurvey(msgIn.data.participant):
+                            if manager.survey:
+                                print(f"Starting survey for "
+                                    + f"{msgIn.data.participant}, set number "
+                                    + f"{msgIn.data.set_num}.")
+                                manager.survey.setNum = msgIn.data.set_num
+                        else:
+                            print(
+                                f"Cannot start survey for "
+                                + f"{msgIn.data.participant}!"
+                            )
+                elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
+                    manager.data_path = os.path.join(
+                        Path(msgIn.data.pathname).parent
+                    )
+                else:
+                    print('Message not recognized')
+            except Exception as e:
+                print(e)
+                rtmaConnected = False
+                client.disconnect()
+
+        client.disconnect()
+        rtmaConnected = False
+
+        if not rtmaExpectedClose:
+            print("RTMA closed unexpectedly. " 
+                + "Attempting reconnection in 5 seconds...")
+            time.sleep(5)
+        else:
+            print("RTMA closed expectedly. Goodbye!")
+    
+# Function to disconnect from RTMA
+def RTMADisconnect():
+    global rtmaConnected
+    rtmaConnected = False
+    global rtmaExpectedClose
+    rtmaExpectedClose = True
+
+"""
+SERVER
+"""
 
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
@@ -65,11 +195,16 @@ async def participant_ws(websocket: WebSocket):
                     print("Saving survey...")
                     if manager.survey.startTime == data["survey"]["startTime"]:
                         manager.survey.fromDict(data["survey"])
+                        rtmaMsgs = manager.survey.toRTMAMessages()
                         result = manager.saveSurvey()
-                        for mesh in data["meshes"]:
-                            obj = Mesh()
-                            obj.fromDict(data["meshes"][mesh])
-                            obj.saveMesh(manager.data_path)
+                        if result:
+                            for msg in rtmaMsgs:
+                                client.send_message(msg)
+                            client.info("Survey messages sent over RTMA!")
+                            for mesh in data["meshes"]:
+                                obj = Mesh()
+                                obj.fromDict(data["meshes"][mesh])
+                                obj.saveMesh(manager.data_path)
                     else:
                         print("Cannot save survey with mismatched start time")
                         result = False
