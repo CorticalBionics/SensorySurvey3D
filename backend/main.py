@@ -1,4 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import Response, FileResponse
 from survey3d import Survey, SurveyManager, Mesh
 from pathlib import Path
 import threading
@@ -19,7 +21,8 @@ async def lifespan(app: FastAPI):
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
-data_path = r"../data/"
+DATA_PATH = r"../data/"
+DIST_PATH = r"../frontend/dist/"
 
 # Get system config
 SYS_CONFIG = load_config.system()
@@ -28,7 +31,7 @@ SYS_CONFIG = load_config.system()
 app = FastAPI(lifespan=lifespan)
 
 # The survey manager
-manager = SurveyManager(CONFIG_PATH, data_path)
+manager = SurveyManager(CONFIG_PATH, DATA_PATH)
 
 # Variable which controls the RTMA loop
 rtmaConnected = False
@@ -141,8 +144,23 @@ def RTMADisconnect():
 SERVER
 """
 
+# Mount files
+app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
+
+@app.get("/")
+def home() -> Response:
+    return FileResponse(DIST_PATH + r"/index.html")
+
+@app.get("/participant")
+def participant() -> Response:
+    return FileResponse(DIST_PATH + r"/participant/index.html")
+
+@app.get("/experimenter")
+def experimenter() -> Response:
+    return FileResponse(DIST_PATH + r"/experimenter/index.html")
+
 @app.websocket("/participant-ws")
-async def participant(websocket: WebSocket):
+async def participant_ws(websocket: WebSocket):
     """
     The websocket entry point for the participant client
     """
@@ -204,7 +222,7 @@ async def participant(websocket: WebSocket):
         print("Participant disconnected")
 
 @app.websocket("/experimenter-ws")
-async def experimenter(websocket: WebSocket):
+async def experimenter_ws(websocket: WebSocket):
     """
     The websocket entry point for the experimenter client
     """

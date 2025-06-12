@@ -16,7 +16,7 @@ var updateServerInterval;
 
 /* WEBSOCKET */
 
-const socketURL = COM.socketURL + "participant-ws";
+const socketURL = "/participant-ws";
 var socket;
 
 /**
@@ -363,11 +363,12 @@ function saveFieldFromEditor() {
  * 		editor
  */
 function populateQualityEditor(field, quality) {
-	const qualityNumber = document.getElementById("qualityNumber");
-	console.log(field.qualities.indexOf(quality));
-	qualityNumber.innerHTML = 
-		"Quality #" + (field.qualities.indexOf(quality) + 1);
-
+	const smallQualityList = document.getElementById("smallQualityList");
+	var quality_positon = field.qualities.indexOf(quality);
+	smallQualityList.replaceChildren(
+		...surveyTable.createQualitiesListChunk(field, quality_positon).children
+	);
+	
 	const typeSelect = document.getElementById("typeSelect");
 	if (quality.type) {
 		typeSelect.value = quality.type;
@@ -503,30 +504,43 @@ function submitCallback() {
 	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
-		const usedMeshes = surveyManager.survey.usedMeshFilenames;
-		const storedMeshes = viewport.storedMeshNames;
-
-		var promises = [];
-
-		if (!usedMeshes.isSubsetOf(storedMeshes)) {
-			const diff = usedMeshes.difference(storedMeshes);
-			for (let key of diff) {
-				promises.push(viewport.loadMeshIntoStorage(key));
-			}
+		var noButton = function() {
+			openList();
+			toggleButtons(true);
 		}
 
-		Promise.all(promises).then(function(values) {
-			const meshParams = viewport.getStoredMeshParameters(usedMeshes);
-			const meshParamsObject = {meshes: meshParams};
+		var yesButton = function() {
+			const usedMeshes = surveyManager.survey.usedMeshFilenames;
+			const storedMeshes = viewport.storedMeshNames;
 
-			if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
-				startSubmissionTimeout();
+			var promises = [];
+
+			if (!usedMeshes.isSubsetOf(storedMeshes)) {
+				const diff = usedMeshes.difference(storedMeshes);
+				for (let key of diff) {
+					promises.push(viewport.loadMeshIntoStorage(key));
+				}
 			}
-			else {
-				toggleButtons(true);
-				alert("Survey submission failed -- socket is not connected!");
-			}
-		});
+
+			Promise.all(promises).then(function(values) {
+				const meshParams = viewport.getStoredMeshParameters(usedMeshes);
+				const meshParamsObject = {meshes: meshParams};
+
+				if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
+					startSubmissionTimeout();
+				}
+				else {
+					toggleButtons(true);
+					alert("Survey submission failed -- socket is not connected!");
+				}
+			});
+		}
+
+		openAlert(
+			"Are you sure you want to submit this survey?",
+			["No", "Yes"],
+			[noButton, yesButton]
+		);
 	}
 	else {
 		toggleButtons(true);
@@ -539,7 +553,7 @@ function submitCallback() {
 			`Cannot submit survey.<br><br>` + surveyValidityError,
 			["Go Back"],
 			[goBackButton]
-		)
+		);
 	}
 }
 
@@ -568,6 +582,9 @@ function viewFieldCallback(field) {
  * @param {Quality} quality - the quality to be edited 
  */
 function editQualityCallback(field, quality) {
+	if (surveyManager.currentQuality) {
+		saveQualityFromEditor();
+	}
 	viewFieldCallback(field);
 	populateQualityEditor(field, quality);
 	openQualityEditor();
