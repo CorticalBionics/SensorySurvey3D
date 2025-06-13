@@ -146,6 +146,8 @@ SERVER
 
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
+app.mount("/images", StaticFiles(directory=DIST_PATH + r"/images", html=True))
+app.mount("/3dmodels", StaticFiles(directory=DIST_PATH + r"/3dmodels", html=True))
 
 @app.get("/")
 def home() -> Response:
