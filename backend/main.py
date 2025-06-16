@@ -63,8 +63,9 @@ def RTMAConnect():
                     return
                 client.connect(MMM_IP)
                 client.subscribe(
-                    [md.MT_ACKNOWLEDGE, 
-                     md.MT_EXIT, 
+                    [md.MT_EXIT, 
+                     md.MT_SET_START,
+                     md.MT_TRIAL_METADATA,
                      md.MT_ENABLE_PARTICIPANT_RESPONSES,
                      md.MT_SAVE_MESSAGE_LOG]
                 )
@@ -85,33 +86,32 @@ def RTMAConnect():
                 msgIn = client.read_message(0.1)
                 if msgIn is None:
                     continue
-                elif (msgIn.type_id == md.MT_ACKNOWLEDGE):
-                    print("RTMA acknowledged")
                 elif (msgIn.type_id == md.MT_EXIT):
                     client.disconnect()
                     rtmaConnected = False
-                elif isinstance(msgIn.data, md.MDF_ENABLE_PARTICIPANT_RESPONSES):
-                    if manager.survey and manager.survey.projectedFields:
-                        print(
-                            "There is already a current survey! Cannot start "
-                            + "new survey until current survey is complete.")
-                    else:
-                        if (manager.survey 
-                            and not manager.survey.projectedFields):
-                            print(f"Survey is empty; updating survey set "
-                                  + f"number to {msgIn.data.set_num}")
-                            manager.survey.setNum = msgIn.data.set_num
-                        elif manager.newSurvey(msgIn.data.participant):
-                            if manager.survey:
-                                print(f"Starting survey for "
-                                    + f"{msgIn.data.participant}, set number "
-                                    + f"{msgIn.data.set_num}.")
-                                manager.survey.setNum = msgIn.data.set_num
-                        else:
+                elif isinstance(msgIn.data, md.MDF_SET_START):
+                    if "Survey" in msgIn.data.paradigm:
+                        if manager.survey and manager.survey.projectedFields:
                             print(
-                                f"Cannot start survey for "
-                                + f"{msgIn.data.participant}!"
-                            )
+                                "There is already a current survey! Cannot start "
+                                + "new survey until current survey is complete.")
+                        else:
+                            if (manager.survey 
+                                and not manager.survey.projectedFields):
+                                print(f"Survey is empty; updating survey set "
+                                    + f"number to {msgIn.data.set_num}")
+                                manager.survey.setNum = msgIn.data.set_num
+                            elif manager.newSurvey(msgIn.data.subject_id):
+                                if manager.survey:
+                                    print(f"Starting survey for "
+                                        + f"{msgIn.data.subject_id}, set number "
+                                        + f"{msgIn.data.set_num}.")
+                                    manager.survey.setNum = msgIn.data.set_num
+                            else:
+                                print(
+                                    f"Cannot start survey for "
+                                    + f"{msgIn.data.subject_id}!"
+                                )
                 elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
                     manager.data_path = os.path.join(
                         Path(msgIn.data.pathname).parent
@@ -217,6 +217,14 @@ async def participant_ws(websocket: WebSocket):
                     await websocket.send_json(msg)
                 else:
                     print("Cannot submit when there is no survey in manager")
+            elif data["type"] == "restim":
+                if isinstance(manager.survey, Survey):
+                    if client.connected:
+                        client.send_signal(md.MT_SENSORY_TRIAL_DISCARD)
+                    else:
+                        print("Cannot restim; RTMA client is disconnected")
+                else:
+                    print("Cannot restim without ongoing survey")
             else:
                 raise ValueError("Bad type value in participant-ws: " 
                                  + f"{data['type']}")

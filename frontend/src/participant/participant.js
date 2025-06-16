@@ -276,6 +276,9 @@ function prepSurvey(survey) {
 		document.getElementById("naturalnessValue").innerHTML = "";
 		document.getElementById("painValue").innerHTML = "";
 	}
+
+	document.getElementById("restimButton").disabled = false;
+
 	if (waitingInterval) { 
 		endWaiting(); 
 	}
@@ -502,6 +505,7 @@ function processSubmissionResult(success) {
  */
 function submitCallback() {
 	toggleButtons(false);
+	document.getElementById("restimButton").disabled = true;
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
 		var noButton = function() {
@@ -815,6 +819,12 @@ function redoCallback(event) {
 	}
 }
 
+function restimCallback(event) {
+	if (!event.target.disabled) {
+		socket.send(JSON.stringify({type: "restim"}))
+	}
+}
+
 /* STARTUP CODE */
 
 window.onload = function() {
@@ -925,6 +935,9 @@ window.onload = function() {
 
 	const redoButton = document.getElementById("redoButton");
 	redoButton.onpointerup = redoCallback;
+
+	const restimButton = document.getElementById("restimButton");
+	restimButton.onpointerup = restimCallback;
 
 	const intensitySlider = document.getElementById("intensitySlider");
 	intensitySlider.oninput = function() {
