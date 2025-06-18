@@ -14,10 +14,9 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    rtmaThread = threading.Thread(target=RTMAConnect)
-    rtmaThread.start()
+    pass # TODO
     yield
-    RTMADisconnect()
+    pass # TODO
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
@@ -32,117 +31,6 @@ app = FastAPI(lifespan=lifespan)
 
 # The survey manager
 manager = SurveyManager(CONFIG_PATH, DATA_PATH)
-
-# Variable which controls the RTMA loop
-rtmaConnected = False
-rtmaExpectedClose = False
-client = pyrtma.Client(module_id=0)
-
-"""
-RTMA
-"""
-
-def RTMAConnect():
-    # Get IP to connect to
-    if SYS_CONFIG and 'server' in SYS_CONFIG:  # Assume in the local sys config
-        MMM_IP = str(SYS_CONFIG["server"])
-    else:
-        MMM_IP = "192.168.1.40:7111"  # Final backup
-
-    global client
-    global rtmaExpectedClose
-
-    while not rtmaExpectedClose:
-        print('Connecting to RTMA at ' + MMM_IP)
-
-        # Attempt to connect to RTMA
-        while not client.connected:
-            try:
-                if (rtmaExpectedClose):
-                    print("RTMA closed expectedly. Goodbye!")
-                    return
-                client.connect(MMM_IP)
-                client.subscribe(
-                    [md.MT_EXIT, 
-                     md.MT_SET_START,
-                     md.MT_TRIAL_METADATA,
-                     md.MT_ENABLE_PARTICIPANT_RESPONSES,
-                     md.MT_SAVE_MESSAGE_LOG]
-                )
-                client.send_module_ready()
-                print('Successfully connected to RTMA, waiting for messages')
-            except Exception as e:
-                print("Could not connect to RTMA, trying again in 5 seconds")
-                client.disconnect()
-                time.sleep(5)
-        
-        # Make connected true
-        global rtmaConnected
-        rtmaConnected = True
-        
-        # Open RTMA message loop
-        while rtmaConnected:
-            try:
-                msgIn = client.read_message(0.1)
-                if msgIn is None:
-                    continue
-                elif (msgIn.type_id == md.MT_EXIT):
-                    client.disconnect()
-                    rtmaConnected = False
-                elif isinstance(msgIn.data, md.MDF_SET_START):
-                    if "Survey" in msgIn.data.paradigm:
-                        if manager.survey and manager.survey.projectedFields:
-                            print(
-                                "There is already a current survey! Cannot start "
-                                + "new survey until current survey is complete.")
-                        else:
-                            if (manager.survey 
-                                and not manager.survey.projectedFields):
-                                print(f"Survey is empty; updating survey set "
-                                    + f"number to {msgIn.data.set_num}")
-                                manager.survey.setNum = msgIn.data.set_num
-                            elif manager.newSurvey(msgIn.data.subject_id):
-                                if manager.survey:
-                                    print(f"Starting survey for "
-                                        + f"{msgIn.data.subject_id}, set number "
-                                        + f"{msgIn.data.set_num}.")
-                                    manager.survey.setNum = msgIn.data.set_num
-                            else:
-                                print(
-                                    f"Cannot start survey for "
-                                    + f"{msgIn.data.subject_id}!"
-                                )
-                elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
-                    manager.data_path = os.path.join(
-                        Path(msgIn.data.pathname).parent
-                    )
-                else:
-                    print('Message not recognized')
-            except Exception as e:
-                print(e)
-                rtmaConnected = False
-                client.disconnect()
-
-        client.disconnect()
-        rtmaConnected = False
-
-        if not rtmaExpectedClose:
-            print("RTMA closed unexpectedly. " 
-                + "Attempting reconnection in 5 seconds...")
-            time.sleep(5)
-        else:
-            print("RTMA closed expectedly. Goodbye!")
-    
-# Function to disconnect from RTMA
-def RTMADisconnect():
-    global rtmaConnected
-    rtmaConnected = False
-    global rtmaExpectedClose
-    rtmaExpectedClose = True
-
-"""
-SERVER
-"""
 
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
