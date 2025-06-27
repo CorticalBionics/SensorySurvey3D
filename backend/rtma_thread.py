@@ -4,7 +4,7 @@ import climber_message as md
 from pathlib import Path
 from climber_core_utilities.climber_app import ClientConfig, ClimberThread
 
-from backend.survey3d import SurveyManager
+from backend.survey_manager import SurveyManager
 from logging import INFO
 
 class RTMAThread(ClimberThread):
