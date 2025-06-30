@@ -9,6 +9,7 @@ from logging import INFO
 
 class RTMAThread(ClimberThread):
     ongoingTrial: bool
+    _messageQueue: list[pyrtma.MessageData]
 
     def __init__(
         self,
@@ -34,13 +35,19 @@ class RTMAThread(ClimberThread):
 
         super().__init__(
             [clientConfig],
-            self.process_message,
+            self.processMessage,
             "SensorySurvey3D Backend",
             server,
             loggingLevel
         )
 
-    def process_message(self, msg: pyrtma.Message):
+    def queueMessage(self, msgData: pyrtma.MessageData):
+        self._messageQueue.append(msgData)
+
+    def queueMessages(self, msgsData: list[pyrtma.MessageData]):
+        self._messageQueue += msgsData
+
+    def processMessage(self, msg: pyrtma.Message):
         match msg.data:
             case md.MDF_SET_START():
                 if "Survey" in msg.data.paradigm:
@@ -90,3 +97,7 @@ class RTMAThread(ClimberThread):
             case _:
                 self.logger.warning("Received unrecognized message")
 
+        # Send queued messages
+        if len(self._messageQueue):
+            for omsg in self._messageQueue:
+                self.client.send_message(omsg)

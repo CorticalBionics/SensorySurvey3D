@@ -1,5 +1,6 @@
 import os
 import json
+import climber_message as md
 from threading import RLock
 from survey3d import SurveyManager
 from rtma_thread import RTMAThread
@@ -38,6 +39,14 @@ class SurveyManagerClimber(SurveyManager):
     def newSurvey(self, participant: str):
         with self.lock:
             return super().newSurvey(participant)
+        
+    def sendSurveyRTMA(self):
+        with self.lock:
+            if self.survey:
+                self.rtmaThread.queueMessages(self.survey.toRTMAMessages())
+
+    def restim(self):
+        self.rtmaThread.queueMessage(md.MDF_SENSORY_TRIAL_DISCARD())
 
     def saveSurvey(self):
         with self.lock:

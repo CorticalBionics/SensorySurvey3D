@@ -1,7 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
-from survey3d import Survey, SurveyManager, Mesh
+from survey3d import Survey, Mesh
+from survey_manager_climber import SurveyManagerClimber
 from pathlib import Path
 import threading
 import pyrtma
@@ -20,7 +21,6 @@ async def lifespan(app: FastAPI):
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
-DATA_PATH = r"../data/"
 DIST_PATH = r"../frontend/dist/"
 
 # Get system config
@@ -30,7 +30,7 @@ SYS_CONFIG = load_config.system()
 app = FastAPI(lifespan=lifespan)
 
 # The survey manager
-manager = SurveyManager(CONFIG_PATH, DATA_PATH)
+manager = SurveyManagerClimber(CONFIG_PATH)
 
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
@@ -88,9 +88,7 @@ async def participant_ws(websocket: WebSocket):
                         rtmaMsgs = manager.survey.toRTMAMessages()
                         result = manager.saveSurvey()
                         if result:
-                            for msg in rtmaMsgs:
-                                client.send_message(msg)
-                            client.info("Survey messages sent over RTMA!")
+                            manager.sendSurveyRTMA()
                             for mesh in data["meshes"]:
                                 obj = Mesh()
                                 obj.fromDict(data["meshes"][mesh])
@@ -107,10 +105,7 @@ async def participant_ws(websocket: WebSocket):
                     print("Cannot submit when there is no survey in manager")
             elif data["type"] == "restim":
                 if isinstance(manager.survey, Survey):
-                    if client.connected:
-                        client.send_signal(md.MT_SENSORY_TRIAL_DISCARD)
-                    else:
-                        print("Cannot restim; RTMA client is disconnected")
+                    manager.restim()
                 else:
                     print("Cannot restim without ongoing survey")
             else:
