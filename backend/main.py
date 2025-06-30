@@ -1,3 +1,8 @@
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import Response, FileResponse
+from survey3d import Survey, SurveyManager, Mesh
+from pathlib import Path
 import threading
 import pyrtma
 import time
@@ -5,12 +10,6 @@ import os
 import climber_message as md
 import climber_core_utilities.load_config as load_config
 import climber_core_utilities.path_tools as path_tools
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import Response, FileResponse
-from backend.survey3d import Survey, Mesh
-from backend.survey_manager import SurveyManager
-from pathlib import Path
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
