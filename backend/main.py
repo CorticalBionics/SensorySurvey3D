@@ -71,38 +71,19 @@ async def participant_ws(websocket: WebSocket):
             # If participant reports having an update, update the server's
             # representation of the survey with that data
             elif data["type"] == "update":
-                if isinstance(manager.survey, Survey):
-                    if manager.survey.startTime == data["survey"]["startTime"]:
-                        manager.survey.fromDict(data["survey"])
-                    else:
-                        print("Cannot update survey with mismatched start time")
-                else:
-                    print("Cannot update when there is no survey in manager!")
+                manager.updateSurvey(data["survey"])
             # If participant requests to submit the survey, update the survey
             # then attempt to save to .json
             elif data["type"] == "submit":
-                if isinstance(manager.survey, Survey):
-                    print("Saving survey...")
-                    if manager.survey.startTime == data["survey"]["startTime"]:
-                        manager.survey.fromDict(data["survey"])
-                        rtmaMsgs = manager.survey.toRTMAMessages()
-                        result = manager.saveSurvey()
-                        if result:
-                            manager.sendSurveyRTMA()
-                            for mesh in data["meshes"]:
-                                obj = Mesh()
-                                obj.fromDict(data["meshes"][mesh])
-                                obj.saveMesh(manager.data_path)
-                    else:
-                        print("Cannot save survey with mismatched start time")
-                        result = False
-                    msg = {
-                        "type" : "submitResponse",
-                        "success" : result
-                    } 
-                    await websocket.send_json(msg)
-                else:
-                    print("Cannot submit when there is no survey in manager")
+                manager.sendSurveyRTMA()
+                manager.updateSurvey(data["survey"])
+                result = manager.saveSurvey()
+                result &= manager.saveMeshData(data["meshes"])
+                msg = {
+                    "type" : "submitResponse",
+                    "success" : result
+                } 
+                await websocket.send_json(msg)
             elif data["type"] == "restim":
                 if isinstance(manager.survey, Survey):
                     manager.restim()
@@ -155,3 +136,7 @@ async def experimenter_ws(websocket: WebSocket):
                                  + f"{data['type']}")
     except WebSocketDisconnect:
         print("Experimenter disconnected")
+
+    @app.get("/favicon.ico")
+    async def favicon():
+        return FileResponse(DIST_PATH + r"/favicon.ico")
