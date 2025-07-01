@@ -48,8 +48,29 @@ class SurveyManagerClimber(SurveyManager):
     def restim(self):
         self.rtmaThread.queueMessage(md.MDF_SENSORY_TRIAL_DISCARD())
 
+    def updateSurvey(self, survey: dict) -> bool:
+        with self.lock:
+            return super().updateSurvey(survey)
+
     def saveSurvey(self):
         with self.lock:
             return super().saveSurvey()
+        
+    def startRTMAThread(self):
+        """Start the rtma thread"""
+        self.rtmaThread.start()
+
+    def stopRTMAThread(self):
+        """Stop the rtma thread"""
+        self.rtmaThread.stop()
+
+    def joinRTMAThread(self):
+        """Wait for rtma thread to join"""
+        self.rtmaThread.join()
+
+    def shutdownRTMAThreadAndWait(self):
+        """Shutdown the rtma thread and wait for it to join"""
+        self.stopRTMAThread()
+        self.joinRTMAThread()
 
     

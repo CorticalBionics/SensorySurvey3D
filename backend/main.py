@@ -13,12 +13,6 @@ import climber_core_utilities.load_config as load_config
 import climber_core_utilities.path_tools as path_tools
 from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    pass # TODO
-    yield
-    pass # TODO
-
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
 DIST_PATH = r"../frontend/dist/"
@@ -26,11 +20,23 @@ DIST_PATH = r"../frontend/dist/"
 # Get system config
 SYS_CONFIG = load_config.system()
 
-# The app we are serving
-app = FastAPI(lifespan=lifespan)
-
 # The survey manager
 manager = SurveyManagerClimber(CONFIG_PATH)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    manager.startRTMAThread()
+    yield
+    print(f"Server shutting down")
+    if manager.rtmaThread.is_alive():
+        print("Stopping rtma thread")
+        manager.stopRTMAThread()
+    print(f"Waiting for rtma thread to close")
+    manager.joinRTMAThread()
+    print(f"Exiting")
+
+# The app we are serving
+app = FastAPI(lifespan=lifespan)
 
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))

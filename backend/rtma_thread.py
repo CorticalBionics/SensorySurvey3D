@@ -38,10 +38,10 @@ class RTMAThread(ClimberThread):
         self.ongoingTrial = False
 
         super().__init__(
-            [clientConfig],
+            clientConfig,
             self.processMessage,
-            "SensorySurvey3D Backend",
             server,
+            "SensorySurvey3D Backend",
             loggingLevel
         )
 
@@ -87,13 +87,12 @@ class RTMAThread(ClimberThread):
                                 )
                         else:
                             print(
-                                f"Cannot start survey for "
-                                f"{msg.data.subject_id}!"
+                                f"Cannot start survey for {msg.data.subject_id}!"
                             )
             case md.MDF_SAVE_MESSAGE_LOG():
                 self.surveyManager.data_path = os.path.join(
-                        Path(msg.data.pathname).parent
-                    )
+                    Path(msg.data.pathname).parent
+                )
             case md.MDF_TRIAL_METADATA():
                 self.ongoingTrial = True
             case md.MDF_ENABLE_PARTICIPANT_RESPONSES():
