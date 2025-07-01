@@ -36,6 +36,7 @@ class RTMAThread(ClimberThread):
 
         self.surveyManager = surveyManager
         self.ongoingTrial = False
+        self._messageQueue = []
 
         super().__init__(
             clientConfig,
