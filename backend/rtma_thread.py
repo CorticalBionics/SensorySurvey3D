@@ -1,11 +1,15 @@
+from __future__ import annotations
 import os
 import pyrtma
 import climber_message as md
 from pathlib import Path
+from typing import TYPE_CHECKING
 from climber_core_utilities.climber_app import ClientConfig, ClimberThread
 
-from survey_manager_climber import SurveyManagerClimber
 from logging import INFO
+
+if TYPE_CHECKING:
+    from survey_manager_climber import SurveyManagerClimber
 
 class RTMAThread(ClimberThread):
     ongoingTrial: bool
