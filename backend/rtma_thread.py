@@ -105,3 +105,4 @@ class RTMAThread(ClimberThread):
         if len(self._messageQueue):
             for omsg in self._messageQueue:
                 self.client.send_message(omsg)
+            self._messageQueue = []

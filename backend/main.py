@@ -5,6 +5,7 @@ from survey3d import Survey, Mesh
 from survey_manager_climber import SurveyManagerClimber
 from pathlib import Path
 import threading
+import logging
 import pyrtma
 import time
 import os
@@ -12,6 +13,7 @@ import climber_message as md
 import climber_core_utilities.load_config as load_config
 import climber_core_utilities.path_tools as path_tools
 from contextlib import asynccontextmanager
+from rich.logging import RichHandler
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
@@ -22,6 +24,13 @@ SYS_CONFIG = load_config.system()
 
 # The survey manager
 manager = SurveyManagerClimber(CONFIG_PATH)
+
+def setup_logger():
+    log = logging.getLogger("uvicorn")
+    log.handlers = []
+    handler = RichHandler(rich_tracebacks=True, log_time_format="[%X.%f]")
+    handler.setFormatter(logging.Formatter("[uvicorn]   %(message)s"))
+    log.addHandler(handler)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
