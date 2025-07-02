@@ -28,8 +28,7 @@ class RTMAThread(ClimberThread):
                 md.MT_EXIT, 
                 md.MT_SET_START,
                 md.MT_TRIAL_METADATA,
-                md.MT_ENABLE_PARTICIPANT_RESPONSES,
-                md.MT_SAVE_MESSAGE_LOG
+                md.MT_ENABLE_PARTICIPANT_RESPONSES
             ],
             primary = True
         )
@@ -51,6 +50,12 @@ class RTMAThread(ClimberThread):
 
     def queueMessages(self, msgsData: list[pyrtma.MessageData]):
         self._messageQueue += msgsData
+
+    def sendMessageQueue(self):
+        if len(self._messageQueue):
+            for omsg in self._messageQueue:
+                self.client.send_message(omsg)
+            self._messageQueue = []
 
     def processMessage(self, msg: pyrtma.Message):
         match msg.data:
@@ -74,8 +79,9 @@ class RTMAThread(ClimberThread):
                                 f"number to {msg.data.set_num}"
                             )
                             self.surveyManager.updateSetNum(
-                                    msg.data.set_num
-                                )
+                                msg.data.set_num
+                            )
+                            self.surveyManager.updateDataPath(msg.data)
                         elif self.surveyManager.newSurvey(msg.data.subject_id):
                             if self.surveyManager.survey:
                                 print(
@@ -86,23 +92,17 @@ class RTMAThread(ClimberThread):
                                 self.surveyManager.updateSetNum(
                                     msg.data.set_num
                                 )
+                                self.surveyManager.updateDataPath(msg.data)
                         else:
                             print(
                                 f"Cannot start survey for {msg.data.subject_id}!"
                             )
-            case md.MDF_SAVE_MESSAGE_LOG():
-                self.surveyManager.data_path = os.path.join(
-                    Path(msg.data.pathname).parent
-                )
             case md.MDF_TRIAL_METADATA():
                 self.ongoingTrial = True
             case md.MDF_ENABLE_PARTICIPANT_RESPONSES():
                 self.ongoingTrial = False
             case _:
-                self.logger.warning("Received unrecognized message")
+                self.logger.warning(f"Received unrecognized message: {type(msg.data)}")
 
         # Send queued messages
-        if len(self._messageQueue):
-            for omsg in self._messageQueue:
-                self.client.send_message(omsg)
-            self._messageQueue = []
+        self.sendMessageQueue()

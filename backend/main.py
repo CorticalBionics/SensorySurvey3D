@@ -90,8 +90,8 @@ async def participant_ws(websocket: WebSocket):
             # If participant requests to submit the survey, update the survey
             # then attempt to save to .json
             elif data["type"] == "submit":
-                manager.sendSurveyRTMA()
                 manager.updateSurvey(data["survey"])
+                manager.sendSurveyRTMA()
                 result = manager.saveSurvey()
                 result &= manager.saveMeshData(data["meshes"])
                 msg = {
@@ -99,6 +99,7 @@ async def participant_ws(websocket: WebSocket):
                     "success" : result
                 } 
                 await websocket.send_json(msg)
+                print("Survey complete!")
             elif data["type"] == "restim":
                 if isinstance(manager.survey, Survey):
                     manager.restim()
