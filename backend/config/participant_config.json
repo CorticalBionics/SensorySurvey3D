@@ -4,8 +4,9 @@
             "Breast" : "nipple_addition.gltf"
         },
         "typeList" : ["touch", "pressure", "tingling", "squeezing",
-                      "buzzing", "electrical", "movement (joint)",
-                      "stinging", "uncomfortable", "contracting", "painful"]
+                      "buzzing", "vibrating", "electrical", "movement (joint)",
+                      "stinging", "uncomfortable", "contracting", "painful",
+                      "gentle", "sudden", "warm", "cool"]
     },
     "bci02" : {
         "models" : {
