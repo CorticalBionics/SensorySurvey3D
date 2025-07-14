@@ -20,8 +20,8 @@
     },
     "2027_001" : {
         "models" : {
-            "Pre-Op": "2027_001/Chest_PreOp.glb",
-            "Post-Op": "2027_001/Chest_PostOp.glb",
+            "Pre-Op": "2027_001/Chest-PreOp.glb",
+            "Post-Op": "2027_001/Chest-PostOp.glb",
             "Generic": "default/nipple_addition.gltf"
         },
         "typeList" : ["touch", "pressure", "tingling", "squeezing",
