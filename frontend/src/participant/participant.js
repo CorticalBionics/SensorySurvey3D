@@ -300,8 +300,6 @@ function prepSurvey(survey) {
 		itchDiv.style.display = 'auto';
 	}
 
-	}
-
 	document.getElementById("restimButton").disabled = false;
 
 	if (waitingInterval) { 
