@@ -50,7 +50,11 @@ app = FastAPI(lifespan=lifespan)
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
 app.mount("/images", StaticFiles(directory=DIST_PATH + r"/images", html=True))
-app.mount("/3dmodels", StaticFiles(directory=DIST_PATH + r"/3dmodels", html=True))
+app.mount("/3dmodels/default", StaticFiles(directory=DIST_PATH + r"/3dmodels", html=True))
+for p in load_config.participant().keys():
+    dir = Path(os.getenv("CLIMBER_CONFIGS"), f"participant\\chicago\\3DScans\\{p}")
+    if os.path.isdir(dir):
+        app.mount(f"/3dmodels/{p}", StaticFiles(directory=dir, html=True))
 
 @app.get("/")
 def home() -> Response:

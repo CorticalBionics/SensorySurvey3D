@@ -18,13 +18,16 @@
                       "Across skin", "Touch", "Pressure", 
                       "Sharp", "Tapping", "Poke", "Other"]
     },
-    "test1" : {
+    "2027_001" : {
         "models" : {
-            "Left Hand" : "hand_l.gltf",
-            "Right Hand" : "hand_r.gltf",
-            "Chest" : "chest.glb"
+            "Pre-Op": "2027_001/Chest_PreOp.glb",
+            "Post-Op": "2027_001/Chest_PostOp.glb",
+            "Generic": "default/nipple_addition.gltf"
         },
-        "typeList" : ["pressure", "poke", "sparkle"],
+        "typeList" : ["touch", "pressure", "tingling", "squeezing",
+                      "buzzing", "vibrating", "electrical", "movement (joint)",
+                      "stinging", "uncomfortable", "contracting",
+                      "gentle", "sudden", "warm", "cool"],
         "hideScaleValues" : false,
         "hidePainSlider" : false,
         "hideItchSlider" : false
