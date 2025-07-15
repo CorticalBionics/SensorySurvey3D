@@ -48,7 +48,8 @@ class Mesh():
 
         Returns: True if saved, False if not
         """
-        filename = f"{self.filename}.json"
+        filename = self.filename.replace("/", "_")
+        filename = f"{filename}.json"
         fullpath = os.path.join(path, filename)
         if not os.path.isfile(fullpath):
             print(f"Saving mesh data to {filename}...")
@@ -367,8 +368,8 @@ class SurveyManager():
                 obj = Mesh()
                 obj.fromDict(meshData[mesh])
                 obj.saveMesh(self.dataPath)
-        except:
-            print("Could not save mesh data")
+        except Exception as e:
+            print(f"Could not save mesh data: {e}")
             return False
         return True
     
