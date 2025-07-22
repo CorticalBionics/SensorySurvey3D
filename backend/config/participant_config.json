@@ -8,6 +8,15 @@
                       "stinging", "uncomfortable", "contracting", "painful",
                       "gentle", "sudden", "warm", "cool"]
     },
+    "BBTest" : {
+        "models" : {
+            "Breast" : "nipple_addition.gltf"
+        },
+        "typeList" : ["touch", "pressure", "tingling", "squeezing",
+                      "buzzing", "vibrating", "electrical", "movement (joint)",
+                      "stinging", "uncomfortable", "contracting", "painful",
+                      "gentle", "sudden", "warm", "cool"]
+    },
     "bci02" : {
         "models" : {
             "Right Hand" : "hand_r.gltf"
@@ -25,9 +34,9 @@
             "Generic": "default/nipple_addition.gltf"
         },
         "typeList" : ["touch", "pressure", "tingling", "squeezing",
-                      "buzzing", "vibrating", "electrical", "movement (joint)",
-                      "stinging", "uncomfortable", "contracting",
-                      "gentle", "sudden", "warm", "cool"],
+                      "buzzing", "vibrating", "electrical", "stroking",
+                      "stinging", "uncomfortable", "contracting", "pleasant",
+                      "gentle", "harsh","arousing", "distressing", "warm", "cool"],
         "hideScaleValues" : false,
         "hidePainSlider" : false,
         "hideItchSlider" : false
