@@ -5,7 +5,40 @@
             "Right Hand" : "hand_r.gltf",
             "Chest" : "chest.glb"
         },
-        "typeList" : ["pressure", "poke", "sparkle"],
+        "typeList" : ["touch", "pressure", "tingling", "squeezing",
+                      "buzzing", "vibrating", "electrical", "movement (joint)",
+                      "stinging", "uncomfortable", "contracting", "painful",
+                      "gentle", "sudden", "warm", "cool"]
+    },
+"BBTest" : {
+        "models" : {
+            "Breast" : "nipple_addition.gltf"
+        },
+        "typeList" : ["touch", "pressure", "tingling", "squeezing",
+                      "buzzing", "vibrating", "electrical", "movement (joint)",
+                      "stinging", "uncomfortable", "contracting", "painful",
+                      "gentle", "sudden", "warm", "cool"]
+    },
+    "bci02" : {
+        "models" : {
+            "Right Hand" : "hand_r.gltf"
+        },
+        "typeList" : ["Electrical", "Tickle", "Itch", 
+                      "Tingle", "Vibration", "Buzzing", 
+                      "Sparkle", "Flutter", "Body limb joint", 
+                      "Across skin", "Touch", "Pressure", 
+                      "Sharp", "Tapping", "Poke", "Other"]
+    },
+    "2027_001" : {
+        "models" : {
+            "Pre-Op": "2027_001/Chest-PreOp.glb",
+            "Post-Op": "2027_001/Chest-PostOp.glb",
+            "Generic": "default/nipple_addition.gltf"
+        },
+        "typeList" : ["touch", "pressure", "tingling", "squeezing",
+                      "buzzing", "vibrating", "electrical", "stroking",
+                      "stinging", "uncomfortable", "contracting", "pleasant",
+                      "gentle", "harsh","arousing", "distressing", "warm", "cool"],
         "hideScaleValues" : false,
         "hidePainSlider" : false,
         "hideItchSlider" : false
