@@ -1,7 +1,7 @@
 {
     "TestBCI" : {
         "models" : {
-            "Breast" : "nipple_addition.gltf"
+            "Breast" : "default/nipple_addition.gltf"
         },
         "typeList" : ["touch", "pressure", "tingling", "squeezing",
                       "buzzing", "vibrating", "electrical", "movement (joint)",
@@ -10,12 +10,12 @@
     },
     "BBTest" : {
         "models" : {
-            "Breast" : "nipple_addition.gltf"
+            "Breast" : "default/nipple_addition.gltf"
         },
         "typeList" : ["touch", "pressure", "tingling", "squeezing",
-                      "buzzing", "vibrating", "electrical", "movement (joint)",
-                      "stinging", "uncomfortable", "contracting", "painful",
-                      "gentle", "sudden", "warm", "cool"]
+                      "buzzing", "vibrating", "electrical", "stroking",
+                      "stinging", "uncomfortable", "contracting", "pleasant",
+                      "gentle", "harsh","arousing", "distressing", "warm", "cool"]
     },
     "bci02" : {
         "models" : {
