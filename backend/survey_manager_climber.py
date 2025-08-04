@@ -4,7 +4,7 @@ import climber_message as md
 from threading import RLock
 from survey3d import SurveyManager
 from rtma_thread import RTMAThread
-from climber_core_utilities.load_config import system
+import climber_core_utilities as ccu
 from climber_core_utilities.test_log import session_string_from_unix_time
 
 class SurveyManagerClimber(SurveyManager):
@@ -14,18 +14,10 @@ class SurveyManagerClimber(SurveyManager):
     def __init__(self, _configPath: str):
         self.survey = None
 
-        try:
-            with open(os.path.join(_configPath, "participant_config.json"), 
-                    'r') as data:
-                self.config = json.load(data)
-        except json.JSONDecodeError as e:
-            raise json.JSONDecodeError(
-                f"Participant config cannot be parsed",
-                e.doc,
-                e.pos
-            )
-        except Exception as e:
-            raise Exception(f"Participant config cannot be read: {e}")
+        self.config = {}
+        climber_participant_config = ccu.load_config.participant()
+        for p in climber_participant_config:
+            self.config[p] = climber_participant_config[p]["survey3d"]
         
         self.dataPath = ""
         
@@ -59,7 +51,7 @@ class SurveyManagerClimber(SurveyManager):
         
     def updateDataPath(self, msgData: md.MDF_SET_START):
         self.dataPath = os.path.join(
-            str(system("data_path")), 
+            str(ccu.load_config.system("data_path")), 
             msgData.session_type,
             f"{msgData.subject_id}",
             f"{msgData.subject_id}.data."
