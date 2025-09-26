@@ -17,7 +17,7 @@ class SurveyManagerClimber(SurveyManager):
         self.config = {}
         climber_participant_config = ccu.load_config.participant()
         for p in climber_participant_config:
-            if "survey3d" in self.config[p]:
+            if "survey3d" in climber_participant_config[p]:
                 self.config[p] = climber_participant_config[p]["survey3d"]
         
         self.dataPath = ""
