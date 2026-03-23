@@ -1,4 +1,4 @@
-import { S as SurveyViewport, C as Color, a as CameraController, b as SurveyTable, p as placeUI, u as uiPositions, c as activatePaletteButton, o as openSidebarTab, d as Survey, V as Vector3, e as SurveyManager } from "./common-Wawiy0C9.js";
+import { S as SurveyViewport, C as Color, a as CameraController, b as SurveyTable, p as placeUI, u as uiPositions, c as activatePaletteButton, o as openSidebarTab, d as openAlert, e as Survey, V as Vector3, f as SurveyManager } from "./common-Dp82JwJb.js";
 /* empty css                      */
 var viewport;
 var surveyManager;
@@ -71,24 +71,6 @@ function toggleButtons(enabled) {
 function toggleUndoRedo(enabled) {
   document.getElementById("undoButton").disabled = !enabled;
   document.getElementById("redoButton").disabled = !enabled;
-}
-function openAlert(message, buttonNames = [], buttonFunctions = []) {
-  const alertTab = document.getElementById("alertTab");
-  alertTab.innerHTML = "";
-  const messageParagraph = document.createElement("p");
-  messageParagraph.style.textAlign = "center";
-  messageParagraph.innerHTML = message;
-  const buttonRow = document.createElement("div");
-  for (let i = 0; i < buttonNames.length; i++) {
-    const name = buttonNames[i];
-    const button = document.createElement("button");
-    button.innerHTML = name;
-    button.onpointerup = buttonFunctions[i];
-    buttonRow.appendChild(button);
-  }
-  alertTab.appendChild(messageParagraph);
-  alertTab.appendChild(buttonRow);
-  openSidebarTab("alertTab");
 }
 function performModelReplacement(modelName, colorVertices = null, color = null, hotSpot = null) {
   viewport.orbMesh.visible = false;
@@ -469,8 +451,12 @@ function submitCallback() {
         }
       });
     };
+    var confirmText = "Are you sure you want to submit this survey?";
+    if (surveyManager.survey.projectedFields.length == 0) {
+      confirmText = "This survey has no projected fields. " + confirmText;
+    }
     openAlert(
-      "Are you sure you want to submit this survey?",
+      confirmText,
       ["No", "Yes"],
       [noButton, yesButton]
     );

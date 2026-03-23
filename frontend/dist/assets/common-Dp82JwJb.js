@@ -1,3 +1,6 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -22297,7 +22300,7 @@ lodash.exports;
       var reIsNative = RegExp2(
         "^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
       );
-      var Buffer = moduleExports ? context.Buffer : undefined$1, Symbol2 = context.Symbol, Uint8Array2 = context.Uint8Array, allocUnsafe = Buffer ? Buffer.allocUnsafe : undefined$1, getPrototype = overArg(Object2.getPrototypeOf, Object2), objectCreate = Object2.create, propertyIsEnumerable = objectProto.propertyIsEnumerable, splice = arrayProto.splice, spreadableSymbol = Symbol2 ? Symbol2.isConcatSpreadable : undefined$1, symIterator = Symbol2 ? Symbol2.iterator : undefined$1, symToStringTag = Symbol2 ? Symbol2.toStringTag : undefined$1;
+      var Buffer2 = moduleExports ? context.Buffer : undefined$1, Symbol2 = context.Symbol, Uint8Array2 = context.Uint8Array, allocUnsafe = Buffer2 ? Buffer2.allocUnsafe : undefined$1, getPrototype = overArg(Object2.getPrototypeOf, Object2), objectCreate = Object2.create, propertyIsEnumerable = objectProto.propertyIsEnumerable, splice = arrayProto.splice, spreadableSymbol = Symbol2 ? Symbol2.isConcatSpreadable : undefined$1, symIterator = Symbol2 ? Symbol2.iterator : undefined$1, symToStringTag = Symbol2 ? Symbol2.toStringTag : undefined$1;
       var defineProperty = function() {
         try {
           var func = getNative(Object2, "defineProperty");
@@ -22307,7 +22310,7 @@ lodash.exports;
         }
       }();
       var ctxClearTimeout = context.clearTimeout !== root.clearTimeout && context.clearTimeout, ctxNow = Date && Date.now !== root.Date.now && Date.now, ctxSetTimeout = context.setTimeout !== root.setTimeout && context.setTimeout;
-      var nativeCeil = Math2.ceil, nativeFloor = Math2.floor, nativeGetSymbols = Object2.getOwnPropertySymbols, nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined$1, nativeIsFinite = context.isFinite, nativeJoin = arrayProto.join, nativeKeys = overArg(Object2.keys, Object2), nativeMax = Math2.max, nativeMin = Math2.min, nativeNow = Date.now, nativeParseInt = context.parseInt, nativeRandom = Math2.random, nativeReverse = arrayProto.reverse;
+      var nativeCeil = Math2.ceil, nativeFloor = Math2.floor, nativeGetSymbols = Object2.getOwnPropertySymbols, nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : undefined$1, nativeIsFinite = context.isFinite, nativeJoin = arrayProto.join, nativeKeys = overArg(Object2.keys, Object2), nativeMax = Math2.max, nativeMin = Math2.min, nativeNow = Date.now, nativeParseInt = context.parseInt, nativeRandom = Math2.random, nativeReverse = arrayProto.reverse;
       var DataView2 = getNative(context, "DataView"), Map2 = getNative(context, "Map"), Promise2 = getNative(context, "Promise"), Set2 = getNative(context, "Set"), WeakMap2 = getNative(context, "WeakMap"), nativeCreate = getNative(Object2, "create");
       var metaMap = WeakMap2 && new WeakMap2();
       var realNames = {};
@@ -34075,13 +34078,6 @@ function extractMatrixScale(matrix, target) {
 BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 Mesh.prototype.raycast = acceleratedRaycast;
-const controlStates = Object.freeze({
-  ORBIT: 0,
-  PAN: 1,
-  PAINT: 2,
-  ERASE: 3,
-  ORB_PLACE: 4
-});
 const meshMaterial = new MeshPhongMaterial({
   color: 16777215,
   flatShading: true,
@@ -34381,6 +34377,7 @@ class CameraController {
       const button = document.createElement("button");
       button.innerHTML = key;
       button.addEventListener("pointerup", (e2) => {
+        this.controls.reset();
         this.setCamera(
           views[key][0],
           views[key][1],
@@ -34443,7 +34440,7 @@ class SurveyViewport {
     this.parentElement.appendChild(this.renderer.domElement);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableZoom = false;
-    this.controlState = controlStates.ORBIT;
+    this.controlState = this.constructor.controlStates.ORBIT;
     this.toOrbit();
     this.pointer = new Vector2();
     this.raycaster = new Raycaster();
@@ -34479,7 +34476,7 @@ class SurveyViewport {
     this.scene.add(this.orbMesh);
     this.eventQueue = new ViewportEventQueue(eventQueueLength);
     this.meshStorage = {};
-    this.pointerDownViewport = true;
+    this.pointerDownViewport = false;
     this.gui = new g();
     const cameraFolder = this.gui.addFolder("Camera");
     cameraFolder.add(this.camera.position, "x").listen();
@@ -34517,6 +34514,111 @@ class SurveyViewport {
     this.meshStorage = {};
   }
   /**
+   * Perform an update on the mesh based on the given control state
+   * @param {SurveyViewport.controlStates} controlState - the control state which will inform behavior
+   */
+  doMeshUpdateForControlState(controlState) {
+    const geometry = this.currentMesh.geometry;
+    const indexAttr = geometry.index;
+    switch (controlState) {
+      case this.constructor.controlStates.ORBIT:
+        this.brushMesh.visible = false;
+        break;
+      case this.constructor.controlStates.PAN:
+        this.brushMesh.visible = false;
+        break;
+      case this.constructor.controlStates.PAINT:
+        if (this.brushActive) {
+          this.brushMesh.scale.setScalar(this.brushSize);
+          this.raycaster.setFromCamera(this.pointer, this.camera);
+          const res = this.raycaster.intersectObject(
+            this.currentMesh,
+            true
+          );
+          if (res.length) {
+            this.brushMesh.position.copy(res[0].point);
+            this.brushMesh.visible = true;
+            const indices = this.getMeshIndicesFromSphere(
+              this.brushMesh.position,
+              this.brushSize,
+              this.currentMesh
+            );
+            if (this.pointerDownViewport) {
+              for (let i2 = 0; i2 < indices.length; i2++) {
+                const vertex2 = indexAttr.getX(indices[i2]);
+                this.populateColorOnVertex(new Color(
+                  "#abcabc"
+                ), this.currentMesh, vertex2);
+              }
+              if (!this.currentEvent) {
+                this.currentEvent = new ViewportEvent(
+                  this.controlState
+                );
+              }
+            }
+          } else {
+            this.brushMesh.visible = false;
+          }
+        } else {
+          this.brushMesh.visible = false;
+        }
+        break;
+      case this.constructor.controlStates.ERASE:
+        if (this.brushActive) {
+          this.brushMesh.scale.setScalar(this.brushSize);
+          this.raycaster.setFromCamera(this.pointer, this.camera);
+          const res = this.raycaster.intersectObject(
+            this.currentMesh,
+            true
+          );
+          if (res.length) {
+            this.brushMesh.position.copy(res[0].point);
+            this.brushMesh.visible = true;
+            const indices = this.getMeshIndicesFromSphere(
+              this.brushMesh.position,
+              this.brushSize,
+              this.currentMesh
+            );
+            if (this.pointerDownViewport) {
+              for (let i2 = 0; i2 < indices.length; i2++) {
+                const vertex2 = indexAttr.getX(indices[i2]);
+                this.populateColorOnVertex(
+                  this.defaultColor,
+                  this.currentMesh,
+                  vertex2
+                );
+              }
+              if (!this.currentEvent) {
+                this.currentEvent = new ViewportEvent(
+                  this.controlState
+                );
+              }
+            }
+          } else {
+            this.brushMesh.visible = false;
+          }
+        } else {
+          this.brushMesh.visible = false;
+        }
+        break;
+      case this.constructor.controlStates.ORB_PLACE:
+        if (this.pointerDownViewport) {
+          this.raycaster.setFromCamera(this.pointer, this.camera);
+          const res = this.raycaster.intersectObject(
+            this.currentMesh,
+            true
+          );
+          if (res.length) {
+            this.orbMesh.position.copy(res[0].point);
+            this.orbMesh.visible = true;
+          } else {
+            this.orbMesh.visible = false;
+          }
+        }
+        break;
+    }
+  }
+  /**
    * Queues the next frame and handles control inputs depending on the current
    * controlState. Must be called once to begin animating the scene.
    */
@@ -34524,105 +34626,7 @@ class SurveyViewport {
     requestAnimationFrame(this.animate.bind(this));
     this.controls.update();
     if (this.currentMesh) {
-      const geometry = this.currentMesh.geometry;
-      const indexAttr = geometry.index;
-      switch (this.controlState) {
-        case controlStates.ORBIT:
-          this.brushMesh.visible = false;
-          break;
-        case controlStates.PAN:
-          this.brushMesh.visible = false;
-          break;
-        case controlStates.PAINT:
-          if (this.brushActive) {
-            this.brushMesh.scale.setScalar(this.brushSize);
-            this.raycaster.setFromCamera(this.pointer, this.camera);
-            const res = this.raycaster.intersectObject(
-              this.currentMesh,
-              true
-            );
-            if (res.length) {
-              this.brushMesh.position.copy(res[0].point);
-              this.brushMesh.visible = true;
-              const indices = this.getMeshIndicesFromSphere(
-                this.brushMesh.position,
-                this.brushSize,
-                this.currentMesh
-              );
-              if (this.pointerDownViewport) {
-                for (let i2 = 0; i2 < indices.length; i2++) {
-                  const vertex2 = indexAttr.getX(indices[i2]);
-                  this.populateColorOnVertex(new Color(
-                    "#abcabc"
-                  ), this.currentMesh, vertex2);
-                }
-                if (!this.currentEvent) {
-                  this.currentEvent = new ViewportEvent(
-                    this.controlState
-                  );
-                }
-              }
-            } else {
-              this.brushMesh.visible = false;
-            }
-          } else {
-            this.brushMesh.visible = false;
-          }
-          break;
-        case controlStates.ERASE:
-          if (this.brushActive) {
-            this.brushMesh.scale.setScalar(this.brushSize);
-            this.raycaster.setFromCamera(this.pointer, this.camera);
-            const res = this.raycaster.intersectObject(
-              this.currentMesh,
-              true
-            );
-            if (res.length) {
-              this.brushMesh.position.copy(res[0].point);
-              this.brushMesh.visible = true;
-              const indices = this.getMeshIndicesFromSphere(
-                this.brushMesh.position,
-                this.brushSize,
-                this.currentMesh
-              );
-              if (this.pointerDownViewport) {
-                for (let i2 = 0; i2 < indices.length; i2++) {
-                  const vertex2 = indexAttr.getX(indices[i2]);
-                  this.populateColorOnVertex(
-                    this.defaultColor,
-                    this.currentMesh,
-                    vertex2
-                  );
-                }
-                if (!this.currentEvent) {
-                  this.currentEvent = new ViewportEvent(
-                    this.controlState
-                  );
-                }
-              }
-            } else {
-              this.brushMesh.visible = false;
-            }
-          } else {
-            this.brushMesh.visible = false;
-          }
-          break;
-        case controlStates.ORB_PLACE:
-          if (this.pointerDownViewport) {
-            this.raycaster.setFromCamera(this.pointer, this.camera);
-            const res = this.raycaster.intersectObject(
-              this.currentMesh,
-              true
-            );
-            if (res.length) {
-              this.orbMesh.position.copy(res[0].point);
-              this.orbMesh.visible = true;
-            } else {
-              this.orbMesh.visible = false;
-            }
-          }
-          break;
-      }
+      this.doMeshUpdateForControlState(this.controlState);
     }
     this.renderer.render(this.scene, this.camera);
   }
@@ -34633,7 +34637,7 @@ class SurveyViewport {
    * controlState object to "camera".
    */
   toOrbit() {
-    this.controlState = controlStates.ORBIT;
+    this.controlState = this.constructor.controlStates.ORBIT;
     this.controls.enabled = true;
     this.controls.enablePan = false;
     this.controls.enableRotate = true;
@@ -34650,7 +34654,7 @@ class SurveyViewport {
    * controlState object to "panning".
    */
   toPan() {
-    this.controlState = controlStates.PAN;
+    this.controlState = this.constructor.controlStates.PAN;
     this.controls.enabled = true;
     this.controls.enablePan = true;
     this.controls.enableRotate = false;
@@ -34665,18 +34669,21 @@ class SurveyViewport {
    * Updates the controlState object to the "painting" state.
    */
   toPaint() {
-    this.controlState = controlStates.PAINT;
+    this.controlState = this.constructor.controlStates.PAINT;
     this.controls.enabled = false;
   }
   /**
    * Updates the controlState object to the "erasing" state.
    */
   toErase() {
-    this.controlState = controlStates.ERASE;
+    this.controlState = this.constructor.controlStates.ERASE;
     this.controls.enabled = false;
   }
+  /**
+   * Updates the controlState object to the ORB_PLACE state.
+   */
   toOrbPlace() {
-    this.controlState = controlStates.ORB_PLACE;
+    this.controlState = this.constructor.controlStates.ORB_PLACE;
     this.controls.enabled = false;
   }
   /**
@@ -34702,12 +34709,12 @@ class SurveyViewport {
   }
   /**
    * Behavior for when the user's pointer goes up anywhere on the document
-   * @param {Event} e - the event whose data will inform the pointer up 
+   * @param {Event} event - the event whose data will inform the pointer up 
    *      behavior
    */
-  onPointerUp(e2) {
+  onPointerUp(event) {
     this.pointerDownViewport = false;
-    if (e2.pointerType === "touch" || e2.pointerType === "pen") {
+    if (event.pointerType === "touch" || event.pointerType === "pen") {
       this.brushActive = false;
     }
     if (this.currentEvent) {
@@ -34899,7 +34906,10 @@ class SurveyViewport {
   getStoredMeshParameters(meshes = null) {
     var result = {};
     for (let prop in this.meshStorage) {
-      if (Object.prototype.hasOwnProperty.call(this.meshStorage, prop) && (!meshes || meshes && meshes.has(prop))) {
+      if (Object.prototype.hasOwnProperty.call(
+        this.meshStorage,
+        prop
+      ) && (!meshes || meshes && meshes.has(prop))) {
         result[prop] = this.getMeshParameters(
           this.meshStorage[prop],
           prop
@@ -35076,7 +35086,7 @@ class SurveyViewport {
    */
   resetEventQueue() {
     this.eventQueue.reset();
-    var defaultEvent = new ViewportEvent(controlStates.PAINT);
+    var defaultEvent = new ViewportEvent(this.constructor.controlStates.PAINT);
     defaultEvent.updateColorStateFromMesh(this.currentMesh);
     this.eventQueue.push(defaultEvent);
   }
@@ -35098,6 +35108,13 @@ class SurveyViewport {
     return new Set(Object.keys(this.meshStorage));
   }
 }
+__publicField(SurveyViewport, "controlStates", {
+  ORBIT: 0,
+  PAN: 1,
+  PAINT: 2,
+  ERASE: 3,
+  ORB_PLACE: 4
+});
 class Quality {
   /**
    * Create a Quality object
@@ -35415,9 +35432,6 @@ class SurveyManager {
    * @returns {string}
    */
   validateSurvey() {
-    if (this.survey.projectedFields.length == 0) {
-      return "Survey has no projected fields.";
-    }
     for (let i2 = 0; i2 < this.survey.projectedFields.length; i2++) {
       const field = this.survey.projectedFields[i2];
       if (field.qualities.length <= 0 && field.vertices > 0) {
@@ -35612,6 +35626,116 @@ class SurveyTable {
     this.parentElement.replaceChildren(...table.children);
   }
 }
+class Landmark {
+  /**
+   * Constructor for Landmark
+   * @param {string} name - the name of the landmark point
+   * @param {number} x - the x position of the landmark point
+   * @param {number} y - the y position of the landmark point
+   * @param {number} z - the z position of the landmark point
+   */
+  constructor(name = "", x = null, y = null, z = null) {
+    this.name = name;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+  validate() {
+    if (this.name.length == 0) {
+      throw new Error("Missing name");
+    }
+    return true;
+  }
+  /**
+   * Create a JSON object of the point
+   * @returns {JSON}
+   */
+  toJSON() {
+    var output = {
+      name: this.name,
+      x: this.x,
+      y: this.y,
+      z: this.z
+    };
+    return output;
+  }
+  /**
+   * Take a JSON object, and use its fields to populate the properties of this
+   * Landmark object
+   * @param {JSON} json - the object whose fields will be used 
+   */
+  fromJSON(json) {
+    this.name = json.name;
+    this.x = json.x;
+    this.y = json.y;
+    this.z = json.z;
+  }
+}
+class LandmarkSet {
+  /**
+   * Constructor for LandmarkSet
+   * @param {string} name - the name of the landmark set
+   * @param {object} mesh - the object containing mesh data
+   * @param {Landmark[]} landmarks - the landmarks associated with this set
+   */
+  constructor(name, mesh, landmarks = []) {
+    this.name = name;
+    this.mesh = mesh;
+    this.landmarks = landmarks;
+  }
+  validate() {
+    if (this.name.length == 0) {
+      throw new Error("Missing name");
+    } else if (this.mesh == null) {
+      throw new Error("No mesh");
+    } else if (this.landmarks.length == 0) {
+      throw new Error("Zero landmarks");
+    }
+    var erroredLandmarks = 0;
+    for (var i2 in this.landmarks) {
+      try {
+        this.landmarks[i2].validate();
+      } catch {
+        erroredLandmarks += 1;
+      }
+    }
+    if (erroredLandmarks > 0) {
+      throw new Error(`${erroredLandmarks} with missing names`);
+    }
+    return true;
+  }
+  /**
+   * Create a JSON object of the landmark set
+   * @returns {JSON}
+   */
+  toJSON() {
+    var jsonLandmarks = [];
+    for (let i2 = 0; i2 < this.landmarks.length; i2++) {
+      jsonLandmarks.push(this.landmarks[i2].toJSON());
+    }
+    var output = {
+      name: this.name,
+      mesh: this.mesh,
+      landmarks: jsonLandmarks
+    };
+    return output;
+  }
+  /**
+   * Take a JSON object, and use its fields to populate the properties of this
+   * LandmarkSet object
+   * @param {JSON} json - the object whose fields will be used 
+   */
+  fromJSON(json) {
+    this.name = json.name;
+    this.mesh = json.mesh;
+    this.landmarks = [];
+    for (let i2 = 0; i2 < json.landmarks.length; i2++) {
+      var landmark = new Landmark();
+      landmark.fromJSON(json.landmarks[i2]);
+      this.landmarks.push(landmark);
+    }
+  }
+}
 const uiPositions = Object.freeze({
   TOP: 0,
   BOTTOM: 1,
@@ -35671,15 +35795,48 @@ function activatePaletteButton(buttonID) {
   }
   document.getElementById(buttonID).classList.add("selectedButton");
 }
+function openAlert(message, buttonNames = [], buttonFunctions = []) {
+  const alertTab = document.getElementById("alertTab");
+  alertTab.innerHTML = "";
+  const messageParagraph = document.createElement("p");
+  messageParagraph.style.textAlign = "center";
+  messageParagraph.innerHTML = message;
+  const buttonRow = document.createElement("div");
+  for (let i2 = 0; i2 < buttonNames.length; i2++) {
+    const name = buttonNames[i2];
+    const button = document.createElement("button");
+    button.innerHTML = name;
+    button.onpointerup = buttonFunctions[i2];
+    buttonRow.appendChild(button);
+  }
+  alertTab.appendChild(messageParagraph);
+  alertTab.appendChild(buttonRow);
+  openSidebarTab("alertTab");
+}
+function highlightText(target) {
+  const highlightedText = document.getElementsByClassName("highlightedText");
+  if (highlightedText.length) {
+    for (let i2 = 0; i2 < highlightedText.length; i2++) {
+      highlightedText[i2].classList.remove("highlightedText");
+    }
+  }
+  target.classList.add("highlightedText");
+}
 export {
   Color as C,
+  Landmark as L,
+  MeshStandardMaterial as M,
   SurveyViewport as S,
   Vector3 as V,
   CameraController as a,
   SurveyTable as b,
   activatePaletteButton as c,
-  Survey as d,
-  SurveyManager as e,
+  openAlert as d,
+  Survey as e,
+  SurveyManager as f,
+  orbMaterial as g,
+  highlightText as h,
+  LandmarkSet as i,
   openSidebarTab as o,
   placeUI as p,
   uiPositions as u
