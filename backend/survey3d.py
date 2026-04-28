@@ -158,6 +158,7 @@ class Survey():
     startTime: str = ""
     endTime: str = ""
     setNum: int = -1
+    setNumHistory: list[int] = field(default_factory=list)
     projectedFields: list[ProjectedField] = field(default_factory=list)
     
     def startDateTimeNow(self) -> None:
@@ -186,7 +187,7 @@ class Survey():
         """
         if not self.projectedFields:
             print("Submitted survey has no projected fields.")
-        filename = f"Survey3D_{self.participant}_{self.date}_{self.startTime}.json"
+        filename = f"Survey3D_{self.participant}_{self.date}_Set{self.setNum:04}.json"
         print(f"Saving survey to {filename}...")
         with open(os.path.join(path, filename), 'w') as file:
             json.dump(self.toDict(), file, indent = 4)
@@ -212,6 +213,7 @@ class Survey():
             "startTime": self.startTime,
             "endTime" : self.endTime,
             "setNum" : self.setNum,
+            "setNumHistory": self.setNumHistory,
             "projectedFields": projectedFieldsDict
         }
 

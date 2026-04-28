@@ -2,7 +2,7 @@ import os
 import json
 import climber_message as md
 from threading import RLock
-from survey3d import SurveyManager
+from survey3d import SurveyManager, Survey
 from rtma_thread import RTMAThread
 import climber_core_utilities as ccu
 from climber_core_utilities.test_log import session_string_from_unix_time
@@ -29,6 +29,9 @@ class SurveyManagerClimber(SurveyManager):
     def updateSetNum(self, setNum: int):
         with self.lock:
             if self.survey:
+                if self.survey.projectedFields:
+                    self.saveSurvey()
+                    self.survey.setNumHistory.append(self.survey.setNum)
                 self.survey.setNum = setNum
 
     def newSurvey(self, participant: str):
@@ -61,7 +64,21 @@ class SurveyManagerClimber(SurveyManager):
 
     def saveSurvey(self):
         with self.lock:
-            return super().saveSurvey()
+            print("Saving survey...")
+            if isinstance(self.survey, Survey) and self.dataPath:
+                self.survey.endTimeNow()
+                try:
+                    if self.survey.saveSurvey(self.dataPath):
+                        return True
+                    else:
+                        print("Survey failed to save")
+                        return False
+                except Exception as e:
+                    print(e)
+                    return False
+            else:
+                print("Cannot save when there is no survey in manager")
+                return False
         
     def startRTMAThread(self):
         """Start the rtma thread"""

@@ -61,42 +61,30 @@ class RTMAThread(ClimberThread):
         match msg.data:
             case md.MDF_SET_START():
                 if "Survey" in msg.data.paradigm:
-                    if (
-                        self.surveyManager.survey 
-                        and self.surveyManager.survey.projectedFields
-                    ):
+                    if self.surveyManager.survey:
                         print(
-                            "There is already a current survey! Cannot start "
-                            + "new survey until current survey is complete."
+                            f"Updating survey set number to "
+                            f"{msg.data.set_num}"
                         )
-                    else:
-                        if (
-                            self.surveyManager.survey 
-                            and not self.surveyManager.survey.projectedFields
-                        ):
+                        self.surveyManager.updateSetNum(
+                            msg.data.set_num
+                        )
+                        self.surveyManager.updateDataPath(msg.data)
+                    elif self.surveyManager.newSurvey(msg.data.subject_id):
+                        if self.surveyManager.survey:
                             print(
-                                f"Survey is empty; updating survey set "
-                                f"number to {msg.data.set_num}"
+                                f"Starting survey for "
+                                f"{msg.data.subject_id}, set number "
+                                f"{msg.data.set_num}."
                             )
                             self.surveyManager.updateSetNum(
                                 msg.data.set_num
                             )
                             self.surveyManager.updateDataPath(msg.data)
-                        elif self.surveyManager.newSurvey(msg.data.subject_id):
-                            if self.surveyManager.survey:
-                                print(
-                                    f"Starting survey for "
-                                    f"{msg.data.subject_id}, set number "
-                                    f"{msg.data.set_num}."
-                                )
-                                self.surveyManager.updateSetNum(
-                                    msg.data.set_num
-                                )
-                                self.surveyManager.updateDataPath(msg.data)
-                        else:
-                            print(
-                                f"Cannot start survey for {msg.data.subject_id}!"
-                            )
+                    else:
+                        print(
+                            f"Cannot start survey for {msg.data.subject_id}!"
+                        )
             case md.MDF_TRIAL_METADATA():
                 self.ongoingTrial = True
             case md.MDF_ENABLE_PARTICIPANT_RESPONSES():

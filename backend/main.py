@@ -165,6 +165,7 @@ async def participant_ws(websocket: WebSocket):
                     "success" : result
                 } 
                 await websocket.send_json(msg)
+                manager.survey = None
                 print("Survey complete!")
             elif data["type"] == "restim":
                 if isinstance(manager.survey, Survey):
