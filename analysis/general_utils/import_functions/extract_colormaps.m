@@ -30,7 +30,7 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
         
         numverts = size(mesh_data.vertices,1);
         temp_field = zeros(numverts,1);
-        temp_field(projected_field.vertices) = 1;
+        temp_field(projected_field.vertices+1) = 1;
         
         if pf==1
             model.vertices = mesh_data.vertices;
