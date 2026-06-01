@@ -25,7 +25,8 @@ html {
     position: fixed;
     z-index: 1000;
     background-color: #111;
-    overflow: hidden;
+    overflow-y: scroll;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -46,7 +47,7 @@ html {
     margin: 4px auto;
     max-height: 30%;
     width: 60%;
-    overflow-y: scroll;
+    overflow: scroll;
 }
 
 .sidebarTab {
@@ -55,7 +56,9 @@ html {
     align-items: center;
     margin: auto;
     flex-direction: column;
-    overflow: hidden;
+    max-height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .widthbar {
@@ -210,7 +213,10 @@ button {
     border: solid;
     border-color: transparent;
     color: white;
-    padding: 12px 24px;
+    min-height: 44px;
+    min-width: 44px;
+    padding-right: 16px;
+    padding-left: 16px;
     text-align: center;
     text-decoration: none;
     display: block;
@@ -328,7 +334,6 @@ input[type="text"] {
 select {
     height: 32px;
     font-size: 1.5vh;
-    width:   75%;
-    margin-top: 8px;
-    margin-bottom: 8px;
+    width: 75%;
+    margin: 8px;
 }
