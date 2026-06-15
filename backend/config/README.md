@@ -8,13 +8,13 @@ Here is an example entry in the participant config:
     "participant_name" : {
         "models" : {
             "Model Name 1" : {
-                "file": "file_name1.gltf",
+                "file": "default/file_name1.gltf",
                 "views": {
                     "Front": [1, 1, 1, 4]
                 }
             },
             "Model Name 2" : {
-                "file": "subfolder/file_name2.gltf",
+                "file": "participant_name/subfolder/file_name2.gltf",
                 "views": {
                     "Front": [1, 1, 1, 4]
                 }
@@ -36,13 +36,13 @@ A copy of the config with which a survey was completed is saved along with the s
 This is the key used to match the participant to its config entry. This name will be displayed in the experimenter screen drop down when selecting which survey will begin next.
 
 ## Models
-This structure contains information about which 3D models will be available to participants. 
+This structure contains information about which 3D models will be available to participants.
 
 ### Model Name
 The name of the model used for the survey. This name will appear in the participant's dropdown menu when selecting which model on which to draw a projected field.
 
 ### File
-The name of the file to load for the model name. The survey will use this name to search in for the file in the /frontend/dist/public/3dmodels folder generated as a result of the ```npx vite build``` operation described in [the top-level README.](/README.md) Paths to models are relative to this 3dmodels folder. For example, a model in a subfolder of 3dmodels would have the file "subfolder/file_name.gltf".
+The name of the file to load for the model name. The survey will use this name to search in for the file in either the participant-specific or ModelTank folders described in [the top-level README.](/README.md) Paths to models are relative to their parent folder, and require a matching prefix, either "(participant name)/" if in a participant folder or "default/" if in the ModelTank. Subfolders, too, are accesible. For example, a model in a subfolder of climber_media/ModelTank would have the file "default/subfolder/file_name.gltf".
 
 ### Views
 Views are default camera locations. They are noted as [x, y, z, zoom], where each variable refers to the camera position. Each view will appear to the participant as a clickable button which will snap the camera to the corresponding position.

@@ -30,7 +30,7 @@ npx vite build
 ```
 
 ### Models
-3D models to be available to users must be in the /frontend/dist/public/3dmodels folder created as a result of this ```npx vite build``` step. To ensure that they exist after building, place them into the [/frontend/src/public/3dmodels](/frontend/src/public/3dmodels/) folder prior to running that command. Whenever you would like to add a new mesh, it is best practice to place it in this folder first, then re-run the build command.
+3D models to be available to users must be in either the climber_configs/participant/(site)/3DScans/(participant name)/ folder for the given participant name or the "default" location of climber_media/ModelBank/.
 
 To make a model available to a participant during a survey, the participant configuration must be edited. See the [configuration README](/backend/config/README.md) for additional details. Survey3D is compatible only with GLTF format files, those ending in .glb or .gltf. Conversion from another 3D file format to .glb or .gltf can be performed within [Blender](https://www.blender.org/).
 
