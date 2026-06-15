@@ -12,7 +12,7 @@ function rselection(bg,eventData,three_dim,ax,Survey3DData,qualities,default_pos
     for q = 1:length(qualities)
         which_occupied = ~cellfun(@isempty,{Survey3DData(this_row).(qualities{q})});
         if sum(which_occupied)
-            appropriate_fields = cat(2,appropriate_fields,cell2mat(cellfun(@(x) x.fields,{Survey3DData(this_row).(qualities{q})},'UniformOutput',false)));
+            appropriate_fields = cat(2,appropriate_fields,cell2mat(cellfun(@(x) cell2mat({x.fields}),{Survey3DData(this_row).(qualities{q})},'UniformOutput',false)));
         end
     end
     

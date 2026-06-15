@@ -24,41 +24,34 @@ function Survey3DDataRecord = launch_annotation_viewers(subject,Survey3DData,axi
         qualities = all_fields(find(strcmp(all_fields,'ModelName'))+1:end);
         annotation_record = struct();
         color_map = struct();
-        
-        for ele = 1:length(unique_documented_electrodes)
-            this_ele = unique_documented_electrodes{ele};
-            color_map.(this_ele) = [];
+
+        for row = 1:size(Survey3DData,2)
+            this_row = these_idxs(row);
+            color_map(this_row).map = [];
         end
         
         for q = 1:length(qualities)
-            annotation_record.(qualities{q}) = struct();
-            for ele = 1:length(unique_documented_electrodes)
-                this_ele = unique_documented_electrodes{ele};
-                which_rows = find(strcmp(documented_electrodes,this_ele));
-                annotation_record.(qualities{q}).(this_ele) = [];
-        
-                for ii = 1:length(which_rows)
-                    if ~isempty(Survey3DData(which_rows(ii)).(qualities{q}))
-                        annotation_record.(qualities{q}).(this_ele) = cat(2, annotation_record.(qualities{q}).(this_ele), Survey3DData(which_rows(ii)).(qualities{q}).fields);
-                    end
+            for row = 1:size(Survey3DData,2)
+                this_row = these_idxs(row);
+                annotation_record(this_row).(qualities{q}) = [];
+
+                if ~isempty(Survey3DData(row).(qualities{q}))
+                    annotation_record(this_row).(qualities{q}) = cat(2, annotation_record(this_row).(qualities{q}), Survey3DData(row).(qualities{q}).fields);
                 end
         
-                color_map.(this_ele) = cat(2, color_map.(this_ele), annotation_record.(qualities{q}).(this_ele));
+                color_map(this_row).map = cat(2, color_map(this_row).map, annotation_record(this_row).(qualities{q}));
             end
         end
         
-        for ele = 1:length(unique_documented_electrodes)
-            this_ele = unique_documented_electrodes{ele};
-            which_map = nansum(color_map.(this_ele),2);
+        for row = 1:size(Survey3DData,2)
+            this_row = these_idxs(row);
+            which_map = nansum(color_map(this_row).map,2);
             which_map(which_map>0) = 1; % binary selected or not, regardless of sensation type 
             if max(which_map,[],"all")>0
                 which_map = which_map./max(which_map,[],"all");
             end
-    
-            which_rows = find(strcmp(documented_electrodes,this_ele));
-            for ii = 1:length(which_rows)
-                Survey3DDataRecord(these_idxs(which_rows(ii))).ColorMap = which_map;
-            end
+
+            Survey3DDataRecord(this_row).ColorMap = which_map;
         end
         
         %% annotation viewer

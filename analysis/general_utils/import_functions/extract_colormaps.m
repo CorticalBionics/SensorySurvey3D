@@ -1,4 +1,4 @@
-function OLS_struct = extract_colormaps(OLS_struct,idx)
+function OLS_struct = extract_colormaps(OLS_struct,idx,current_model)
     model = struct();
     base_path = OLS_struct(idx).Base;
     annotation_path = OLS_struct(idx).Annotation;
@@ -26,7 +26,12 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
             model.name(model.name=='.') = '_';
             model.name(model.name=='/') = '_';
         end
-        mesh_data = import_json([model.name '.json'],false);
+
+        if ~isempty(current_model)
+            mesh_data = import_json([current_model.folder '\' current_model.name],false); % model extracted directly from experiment folder
+        else
+            mesh_data = import_json([model.name '.json'],false); % model cleaned from name
+        end
         
         numverts = size(mesh_data.vertices,1);
         temp_field = zeros(numverts,1);
@@ -54,11 +59,21 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
         for q = 1:length(this_projected_field.qualities)
             try
                 temp = this_projected_field.qualities{q};
-                OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = this_projected_field;
+                if ~isfield(OLS_struct(idx),([upper(temp(1)) lower(temp(2:end))]))
+                    OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = this_projected_field;
+                else
+                    previous_entry = OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]);
+                    OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = [previous_entry;this_projected_field];
+                end
             catch
                 temp = this_projected_field.qualities{q};
                 temp(temp==' ') = '_';
-                OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = this_projected_field;
+                if ~isfield(OLS_struct(idx),([upper(temp(1)) lower(temp(2:end))]))
+                    OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = this_projected_field;
+                else
+                    previous_entry = OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]);
+                    OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = [previous_entry;this_projected_field];
+                end
             end
         end
     end

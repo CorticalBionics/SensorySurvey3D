@@ -42,7 +42,7 @@ function plot_oblique_distribution(Survey3DData)
     % ranksum(oblique_1,oblique_2)
     
     ylim([0 1])
-    text(1.5,0.9,'**','FontSize',14)
+    text(1.5,0.9,'***','FontSize',14)
     xticks([1 2])
     xticklabels({'C1','C2'})
     % saveas(gcf,'annotation_obliqueness.png')
