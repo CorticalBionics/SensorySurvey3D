@@ -59,9 +59,27 @@ app = FastAPI(lifespan=lifespan)
 # Mount files
 app.mount("/assets", StaticFiles(directory=DIST_PATH + r"assets", html=True))
 app.mount("/images", StaticFiles(directory=DIST_PATH + r"images", html=True))
-app.mount("/3dmodels/default", StaticFiles(directory=DIST_PATH + r"3dmodels", html=True))
+app.mount(
+    "/3dmodels/default", 
+    StaticFiles(
+        directory=Path(
+            os.getenv(
+                "CLIMBER_MEDIA",
+                r"C:/GitHub/climber_root/components/misc/climber_media/",
+            ), 
+            f"ModelBank"
+        ), 
+        html=True,
+    ),
+)
 for p in load_config.participant().keys():
-    dir = Path(os.getenv("CLIMBER_CONFIGS"), f"participant\\{os.getenv("CC_SITE")}\\3DScans\\{p}")
+    dir = Path(
+        os.getenv(
+            "CLIMBER_CONFIGS", 
+            r"C:/GitHub/climber_root/components/climber_configs/",
+        ), 
+        f"participant\\{os.getenv("CC_SITE")}\\3DScans\\{p}",
+    )
     if os.path.isdir(dir):
         app.mount(f"/3dmodels/{p}", StaticFiles(directory=dir, html=True))
 
