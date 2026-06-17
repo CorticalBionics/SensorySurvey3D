@@ -15,7 +15,7 @@ function Survey3DData = quantify_oblique_annotations(Survey3DData,MorphedMeshes)
             this_model.source.face_area(f) = norm(cross(A,B))/2;
         end
 
-        annotated_faces = sum(ismember(this_model.source.faces,find(color_map{idx}>0)),2)==3;
+        annotated_faces = sum(ismember(this_model.source.faces+1,find(color_map{idx}>0)),2)==3;
 
         % sum areas of oblique faces which are annotated
         oblique_area = sum(this_model.source.face_area(annotated_faces&this_model.source.oblique));
