@@ -70,7 +70,7 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
         if sum(which_occupied)
             % check box and consider these fields in the overall display
             qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(q));
-            appropriate_fields = cat(2,appropriate_fields,cell2mat(cellfun(@(x) x.fields,{Survey3DData(this_electrode(which_occupied)).(qualities{q})},'UniformOutput',false)));
+            appropriate_fields = cat(2,appropriate_fields,cell2mat(cellfun(@(x) cell2mat({x.fields}),{Survey3DData(this_electrode(which_occupied)).(qualities{q})},'UniformOutput',false)));
         end
     end
     

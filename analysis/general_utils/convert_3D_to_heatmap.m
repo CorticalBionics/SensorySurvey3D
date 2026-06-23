@@ -36,14 +36,14 @@ function [palmar,dorsal] = convert_3D_to_heatmap(three_dim,three_dim_dorsum,docu
     disp_shape_single(three_dim_dorsum.verts_flat,three_dim_dorsum.faces,color_map,0,0);
 
     cdata = print('-RGBImage','-r272','-noui');
-    d = cdata(:,1:size(cdata,2)/2,:);
+    d = cdata(:,size(cdata,2)/2+1:end,:);
     del_row = sum(d(:,:,1)~=0,2)==size(d,2);
     del_col = sum(d(:,:,1)~=0,1)==size(d,1);
     d(del_row,:,:) = [];
     d(:,del_col,:) = [];
     temp = double(d(:,:,1));
-    dorsal = temp(1:orig_size(1),1:orig_size(2)); % enforce proper sizing
-    
+    dorsal = fliplr(temp(1:orig_size(1),1:orig_size(2))); % enforce proper sizing
+
     sgtitle(foo(2))
     % close all
 end

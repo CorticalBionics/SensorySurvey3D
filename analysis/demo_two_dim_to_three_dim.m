@@ -1,7 +1,7 @@
 
 %% enter annotation details
 conform_to_2D_illustration = true;
-survey_data_file = "Survey3DData_Recent_BCI.mat";
+survey_data_file = "Survey3DData_Recent_BCI_indexing_260526.mat";
 
 %% define your landmarks
 % primary landmarks:
@@ -39,7 +39,6 @@ load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sess
 
 Survey3DData = launch_annotation_viewers('BCI02',Survey3DData,"hand_landmarks");
 Survey3DData = launch_annotation_viewers('BCI03',Survey3DData,"hand_landmarks");
-Survey3DData = revise_colormaps(Survey3DData);
 
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
 
@@ -80,7 +79,7 @@ for ddd = 1:length(Survey3DData)
     Survey3DData(ddd).Palmar(Survey3DData(ddd).Palmar>0) = 1;
     Survey3DData(ddd).Dorsal(Survey3DData(ddd).Dorsal>0) = 1;
 end
-% save('survey3d_data_260320.mat','-v7.3','Survey3DData')
+% save('survey3d_data_260528.mat','-v7.3','Survey3DData','MorphedMeshes')
 
 %% compute and plot elements of Figure 3
 % to plot correctly, you're going to need functions from ChartsWithCharles
