@@ -1,4 +1,4 @@
-import { S as SurveyViewport, C as Color, a as CameraController, b as SurveyTable, p as placeUI, u as uiPositions, c as activatePaletteButton, o as openSidebarTab, d as openAlert, e as Survey, V as Vector3, f as SurveyManager } from "./common-Dp82JwJb.js";
+import { S as SurveyViewport, C as Color, a as CameraController, b as SurveyTable, p as placeUI, u as uiPositions, c as activatePaletteButton, o as openSidebarTab, d as openAlert, e as Survey, V as Vector3, f as SurveyManager } from "./common-LrkG8Vgq.js";
 /* empty css                      */
 var viewport;
 var surveyManager;

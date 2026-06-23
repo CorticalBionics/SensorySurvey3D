@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-import { M as MeshStandardMaterial, S as SurveyViewport, g as orbMaterial, C as Color, a as CameraController, o as openSidebarTab, p as placeUI, u as uiPositions, c as activatePaletteButton, h as highlightText, L as Landmark, i as LandmarkSet, d as openAlert } from "./common-Dp82JwJb.js";
+import { M as MeshStandardMaterial, S as SurveyViewport, g as orbMaterial, C as Color, a as CameraController, o as openSidebarTab, p as placeUI, u as uiPositions, c as activatePaletteButton, h as highlightText, L as Landmark, i as LandmarkSet, d as openAlert } from "./common-LrkG8Vgq.js";
 /* empty css                      */
 const selectedOrbMaterial = new MeshStandardMaterial({
   color: 4255155,
