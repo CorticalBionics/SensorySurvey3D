@@ -55,7 +55,7 @@ class SurveyManagerClimber(SurveyManager):
         
     def updateDataPath(self, msgData: md.MDF_SET_START):
         self.dataPath = os.path.join(
-            str(ccu.load_config.system("data_path")), 
+            str(ccu.load_config.host("data_path")), 
             msgData.session_type,
             f"{msgData.subject_id}",
             f"{msgData.subject_id}.data."
