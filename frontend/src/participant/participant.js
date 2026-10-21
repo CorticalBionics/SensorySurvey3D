@@ -343,7 +343,7 @@ function populateFieldEditor(field) {
 		const modelSelect = document.getElementById("modelSelect");
 		if (field.model) {
 			performModelReplacement(
-				modelSelect.value,
+				field.model,
 				field.vertices,
 				new THREE.Color("#abcabc"),
 				field.hotSpot
@@ -721,7 +721,7 @@ function fieldDoneCallback() {
 		alertMessage = 
 			`The current projected field is missing a drawing.`;
 	}
-	else if (!viewport.orbMesh.visible) {
+	else if (!viewport.orbMesh.visible && surveyManager.survey.config.alertIfNoHotSpot) {
 		alertMessage = 
 				`The current projected field is missing a hot spot.`;
 	}
